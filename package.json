@@ -11,7 +11,9 @@
   },
   "overrides": {
     "serialize-javascript": ">=7.0.3",
-    "diff": ">=7.0.0"
+    "diff": ">=7.0.0",
+    "brace-expansion": "^2.0.3",
+    "picomatch": "^2.3.2"
   },
   "dependencies": {
     "circomlib": "^2.0.5",
