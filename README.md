@@ -4,7 +4,7 @@ ZK circuit definitions for the Entros Protocol. Proves that the Hamming distance
 
 ## Circuit
 
-**`entros_hamming.circom`** — Main Groth16 circuit (BN254). ~1,996 constraints.
+**`entros_hamming.circom`** — Main Groth16 circuit (BN254). ~2,010 constraints.
 
 Proves three things:
 1. `Poseidon(pack(ft_new), salt_new) == commitment_new`
