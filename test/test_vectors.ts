@@ -20,7 +20,7 @@ function seededRng(label: string): () => number {
 }
 
 // BN254 scalar field prime
-const F_p = BigInt(
+export const F_p = BigInt(
   "21888242871839275222246405745257275088548364400416034343698204186575808495617"
 );
 
