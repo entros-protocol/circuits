@@ -27,12 +27,10 @@ Groth16 requires a structured reference string (SRS) produced by a trusted setup
 - On devnet, this is standard and acceptable. All Groth16 projects use single-contributor setups during development.
 - For mainnet, a multi-party computation (MPC) ceremony is required where multiple independent contributors each add entropy. The toxic waste is only compromised if ALL contributors collude. The ceremony will follow the Hermez/snarkjs Phase 2 protocol with public verification of each contribution.
 
-**Mainnet ceremony plan:**
-1. Publish the circuit and R1CS constraint system
-2. Coordinate 10+ independent contributors (team, community, partner protocols)
-3. Each contributor runs `snarkjs zkey contribute` with their own entropy
-4. Final verification key published with full transcript of contributions
-5. Re-deploy `entros-verifier` with the ceremony-derived verification key
+**Mainnet ceremony:** the full operator runbook — contributor protocol, transcript/attestation
+format, and the post-ceremony redeploy checklist — is in [`CEREMONY.md`](./CEREMONY.md). Run it
+via `scripts/setup.sh --ceremony` (the only mode that writes `keys/`); the default
+`scripts/setup.sh` is a local test build that never touches `keys/`.
 
 ## Setup
 
@@ -40,8 +38,9 @@ Groth16 requires a structured reference string (SRS) produced by a trusted setup
 # Prerequisites: circom (cargo install --git https://github.com/iden3/circom.git), Node.js >= 20
 
 npm install
-./scripts/setup.sh    # Download ptau, compile, trusted setup, export VK
-npm test              # Run circuit tests (7 tests)
+./scripts/setup.sh            # Test build: compile + local proving key in build/ (keys/ untouched)
+./scripts/setup.sh --ceremony # Multi-party Phase-2 ceremony: writes keys/ (see CEREMONY.md)
+npm test                      # Run circuit tests
 ```
 
 ## Proof Generation

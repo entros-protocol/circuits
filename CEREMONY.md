@@ -1,0 +1,101 @@
+# Phase-2 Trusted-Setup Ceremony — Runbook
+
+The Groth16 proving system for `entros_hamming.circom` needs a per-circuit Phase-2
+trusted setup. Until a multi-party ceremony runs, the setup has a **single contributor**
+(see `README.md`) — whoever generated it knows the toxic waste and could forge proofs
+that pass on-chain verification. This document is the operator runbook for replacing it
+with a real ceremony where the setup is only compromised if **every** contributor colludes.
+
+> Two ceremony phases, don't confuse them:
+> - **Phase 1 (Powers of Tau)** is circuit-agnostic and already done — we use the public
+>   Hermez `powersOfTau28_hez_final_12.ptau`. Not our concern.
+> - **Phase 2 (this document)** is circuit-specific and must be re-run whenever the circuit
+>   changes (so it runs on the *final* circuit — e.g. after the H1 range-bound fix).
+
+## When to run
+
+- Before mainnet (it is a mainnet-blocking item, C3).
+- After any change to `circom/entros_hamming.circom` or its includes, because a circuit
+  change produces a new R1CS → new proving/verifying keys. The committed `keys/` and the
+  deployed verifier remain the matched *previous* pair until this ceremony + the redeploy
+  below land together.
+
+## Roles
+
+- **Coordinator** — compiles the final circuit, runs the initial setup, sequences the
+  hand-off, finalizes, exports the VK, and publishes the transcript.
+- **Contributors** — ≥ 3 independent, non-colluding operators from different orgs (e.g. an
+  Anza engineer, a Light Protocol engineer, an academic). More is better; the security
+  assumption is "at least one contributor destroyed their toxic waste."
+
+## Ceremony sequence
+
+The coordinator starts from the committed circuit. `scripts/setup.sh --ceremony` automates
+the **single-machine** variant (used for devnet keys and for CI/dry-runs); for **mainnet**,
+each contributor runs their step on their **own air-gapped machine** and hands the `.zkey`
+to the next, so no single machine ever sees two contributors' entropy.
+
+1. **Coordinator — initialize** (on the final, committed circuit):
+   ```
+   circom circom/entros_hamming.circom --r1cs --wasm --sym --output build/ -l node_modules/circomlib/circuits
+   snarkjs groth16 setup build/entros_hamming.r1cs build/pot12_final.ptau build/entros_hamming_0000.zkey
+   ```
+   Publish the circuit hash (printed by the next `zkey contribute`) so contributors can
+   confirm they're all contributing to the same circuit.
+
+2. **Each contributor i (1..N), on their own machine:**
+   - Receive `entros_hamming_<i-1>.zkey` from the coordinator/previous contributor.
+   - Contribute their **own** entropy (interactive — do not pass `-e` from a script):
+     ```
+     snarkjs zkey contribute entros_hamming_<i-1>.zkey entros_hamming_<i>.zkey --name="<org / handle>"
+     # snarkjs prompts for random text; mash the keyboard / pipe from a hardware RNG.
+     ```
+   - Record the printed **Contribution Hash** and **sign it** (PGP or a Solana key).
+   - **Destroy the toxic waste**: the machine's RAM/entropy and `entros_hamming_<i-1>.zkey`;
+     attest destruction in writing alongside the signed hash.
+   - Hand `entros_hamming_<i>.zkey` to the next contributor (never the earlier files).
+
+3. **Coordinator — finalize, verify, export:**
+   ```
+   # Optional public-beacon finalization (e.g. a future Bitcoin block hash):
+   snarkjs zkey beacon entros_hamming_<N>.zkey entros_hamming_final.zkey <beaconHashHex> 10 -n="final beacon"
+   # else: cp entros_hamming_<N>.zkey entros_hamming_final.zkey
+   snarkjs zkey verify build/entros_hamming.r1cs build/pot12_final.ptau build/entros_hamming_final.zkey
+   snarkjs zkey export verificationkey build/entros_hamming_final.zkey keys/verification_key.json
+   node scripts/parse_vk_to_rust.js keys/verification_key.json keys/
+   ```
+   The single-machine equivalent of steps 1–3 is `CEREMONY_CONTRIBUTORS=<N> CEREMONY_BEACON=<hex> scripts/setup.sh --ceremony`.
+
+## Transcript & attestation
+
+Publish, for every contribution: index, contributor name/org, the **contribution hash**,
+the contributor's **signature** over that hash, and their **toxic-waste-destruction
+attestation**. Publish the **circuit hash**, the optional **beacon** value, and the final
+`keys/verification_key.json`. Anyone can then re-verify the chain with `snarkjs zkey verify`
+and confirm each hash matches a signed attestation. `scripts/setup.sh --ceremony` writes a
+starter transcript to `build/ceremony_transcript.txt` (circuit hash + per-contribution hashes).
+
+## Redeploy checklist (after the ceremony)
+
+Every artifact below currently carries the previous (single-contributor) key and **all** must
+be regenerated from the ceremony output and redeployed together — a partial swap breaks
+proofs (the on-chain VK and the prover keys must match):
+
+| Artifact | Path | Action |
+|---|---|---|
+| VK (JSON + Rust) | `circuits/keys/verification_key.json`, `keys/verifying_key.rs` | commit the ceremony output |
+| On-chain VK constant | `protocol-core/programs/entros-verifier/src/verifying_key.rs` | **entros-verifier program upgrade** — requires the program **upgrade authority**, which should be the **H5 multisig** first (do not upgrade under a single key for mainnet) |
+| Mobile / mopro prover | `entros-mobile/assets/circuits/entros_hamming_final.zkey`; `entros-mopro/test-vectors/circom/entros_hamming_final.zkey` + `entroshamming.wasm` (note: w2c2 strips the underscore from the wasm name) | rebuild + app-store release (also gated on the v3 308-feature mobile upgrade) |
+| Web prover | `entros.io/public/circuits/entros_hamming.wasm` + `entros_hamming_final.zkey` (served via `NEXT_PUBLIC_{WASM,ZKEY}_URL`) | re-host (Vercel) |
+
+Then **rotate out** the old forge-capable `.zkey`/VK everywhere and publish the transcript.
+
+## Verification
+
+- `snarkjs zkey verify build/entros_hamming.r1cs build/pot12_final.ptau keys/...` passes, and
+  each transcript contribution hash matches its signed attestation.
+- The on-chain `verifying_key.rs` byte-matches `parse_vk_to_rust.js` output from the ceremony
+  VK, and still reports **4 public inputs / 5 IC entries** (the H1 fix changes constraints, not
+  the public-signal layout).
+- A web and a mobile prover each generate a proof that verifies against the redeployed
+  `entros-verifier`.
