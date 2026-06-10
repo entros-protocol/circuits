@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "setup": "./scripts/setup.sh",
-    "test": "npx ts-mocha -p tsconfig.json -t 60000 test/**/*.ts",
+    "test": "tsx ./node_modules/mocha/bin/mocha.js --exit -t 120000 \"test/**/*.test.ts\"",
     "prove": "./scripts/prove.sh",
     "verify": "./scripts/verify.sh",
     "export-vk": "node scripts/parse_vk_to_rust.js keys/verification_key.json keys/"
@@ -26,8 +26,7 @@
     "@types/node": "^25.5.0",
     "chai": "^4.5.0",
     "mocha": "^11.7.5",
-    "ts-mocha": "^10.0.0",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.2"
   }
 }
