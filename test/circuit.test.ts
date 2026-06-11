@@ -1,13 +1,12 @@
 import { expect } from "chai";
 import * as snarkjs from "snarkjs";
-import * as path from "path";
-import * as fs from "fs";
 import {
   generateValidInput,
   generateInvalidInput,
   generateProof,
   serializeProofForSolana,
-  VK_PATH,
+  F_p,
+  ZKEY_PATH,
 } from "./test_vectors";
 
 describe("Entros Hamming Distance Circuit", function () {
@@ -16,8 +15,12 @@ describe("Entros Hamming Distance Circuit", function () {
   let vk: any;
 
   before(async () => {
-    const vkPath = path.resolve(VK_PATH);
-    vk = JSON.parse(fs.readFileSync(vkPath, "utf-8"));
+    // Derive the verification key from the SAME proving key the proofs use, so
+    // the suite tests circuit logic (prove + verify with a matched pair) rather
+    // than whether the committed keys/ happen to match the current circuit —
+    // which they intentionally won't between a circuit change (e.g. H1) and the
+    // key-regeneration rollout.
+    vk = await snarkjs.zKey.exportVerificationKey(ZKEY_PATH);
   });
 
   it("accepts valid proof (distance within range)", async () => {
@@ -130,6 +133,46 @@ describe("Entros Hamming Distance Circuit", function () {
     const { proof, publicSignals } = await generateProof(input);
     const valid = await snarkjs.groth16.verify(vk, publicSignals, proof);
     expect(valid).to.be.true;
+  });
+
+  // H1: the public comparator inputs are now range-bound by Num2Bits(9).
+  // Pre-fix, threshold or min_distance set to a field value ≈ p aliased past
+  // the 9-bit LessThan/GreaterEqThan and defeated the drift bound for any
+  // verifier that didn't separately range-check. These now fail witness
+  // generation at the Num2Bits constraint.
+  it("rejects threshold set to a wrapping field value (H1)", async () => {
+    const input = await generateValidInput(10, 30, 3, "h1-threshold");
+    input.threshold = (F_p - 1n).toString();
+    try {
+      await generateProof(input);
+      expect.fail("Proof generation should have failed — threshold exceeds the 9-bit bound");
+    } catch (err: any) {
+      expect(err).to.exist;
+    }
+  });
+
+  it("rejects min_distance set to a wrapping field value (H1)", async () => {
+    const input = await generateValidInput(10, 30, 3, "h1-mindist");
+    input.min_distance = (F_p - 1n).toString();
+    try {
+      await generateProof(input);
+      expect.fail("Proof generation should have failed — min_distance exceeds the 9-bit bound");
+    } catch (err: any) {
+      expect(err).to.exist;
+    }
+  });
+
+  it("rejects threshold just above the 9-bit bound — 512 (H1)", async () => {
+    // 512 is the first value that doesn't fit in 9 bits (0..511). Confirms the
+    // bound is exactly 9-bit, not merely "rejects huge field values".
+    const input = await generateValidInput(10, 30, 3, "h1-512");
+    input.threshold = "512";
+    try {
+      await generateProof(input);
+      expect.fail("Proof generation should have failed — 512 exceeds the 9-bit bound");
+    } catch (err: any) {
+      expect(err).to.exist;
+    }
   });
 
   it("serializes proof in groth16-solana format", async () => {
