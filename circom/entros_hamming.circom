@@ -5,7 +5,7 @@ include "../node_modules/circomlib/circuits/bitify.circom";
 include "hamming_distance.circom";
 include "commitment_check.circom";
 
-// IAM Protocol Hamming Distance Proof Circuit
+// Entros Protocol Hamming Distance Proof Circuit
 //
 // Proves four things without revealing the fingerprints:
 // 1. ft_new hashes to commitment_new under salt_new
