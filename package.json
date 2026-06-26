@@ -13,7 +13,9 @@
     "serialize-javascript": ">=7.0.3",
     "diff": ">=7.0.0",
     "brace-expansion": "^2.0.3",
-    "picomatch": "^2.3.2"
+    "picomatch": "^2.3.2",
+    "ws": "^8.21.0",
+    "underscore": "^1.13.8"
   },
   "dependencies": {
     "circomlib": "^2.0.5",
