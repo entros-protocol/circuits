@@ -10,8 +10,8 @@
     "export-vk": "node scripts/parse_vk_to_rust.js keys/verification_key.json keys/"
   },
   "overrides": {
-    "serialize-javascript": ">=7.0.3",
-    "diff": ">=7.0.0",
+    "serialize-javascript": "^7.0.3",
+    "diff": "^8.0.0",
     "brace-expansion": "^2.0.3",
     "picomatch": "^2.3.2",
     "ws": "^8.21.0",
