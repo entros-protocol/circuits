@@ -1,6 +1,14 @@
 # circuits
 
-ZK circuit definitions for the Entros Protocol. Proves that the Hamming distance between two Poseidon-committed Temporal Fingerprints is below a threshold, without revealing either fingerprint.
+ZK circuit definitions for the Entros Protocol. The circuit proves two Poseidon openings and a bounded Hamming distance without revealing either fingerprint.
+
+## Release compatibility
+
+The current source tree and `keys/` contain an unpublished circuit successor with explicit public-input range constraints.
+
+The deployed devnet verifier, web artifacts, mobile artifacts, and mopro package share the previous proving-key generation. Do not mix either generation.
+
+The next circuit release must regenerate and verify every proving and verifying artifact in one coordinated migration. The multi-party ceremony follows that circuit freeze.
 
 ## Circuit
 
@@ -52,8 +60,11 @@ npx snarkjs groth16 fullprove <input.json> build/entros_hamming_js/entros_hammin
 
 ## Verification Key
 
-`keys/verification_key.json` — snarkjs format, committed to the repo.
-`keys/verifying_key.rs` — Rust format for `groth16-solana`, used by `protocol-core/entros-verifier`.
+`keys/verification_key.json` is the snarkjs key for the unpublished successor.
+
+`keys/verifying_key.rs` is its Rust representation for `groth16-solana`.
+
+Do not copy this Rust key into `protocol-core` alone. Web, mobile, mopro, and the on-chain verifier must move together.
 
 ## License
 
