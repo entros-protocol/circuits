@@ -62,7 +62,10 @@ PTAU_MAX=4096
 # Anchor to snarkjs's canonical "# of Constraints: N" line; fail loud if the
 # count can't be parsed rather than silently skipping the guard (a no-match
 # grep under `set -o pipefail` would otherwise leave CONSTRAINT_COUNT empty).
-CONSTRAINT_COUNT=$(npx snarkjs r1cs info build/entros_hamming.r1cs 2>&1 | grep -iE '# of constraints' | grep -oE '[0-9]+' | head -1)
+CONSTRAINT_COUNT=$(
+  npx snarkjs r1cs info build/entros_hamming.r1cs 2>&1 |
+    bash scripts/parse_constraint_count.sh
+)
 if [ -z "$CONSTRAINT_COUNT" ]; then
   echo "Error: could not parse the constraint count from 'snarkjs r1cs info'."
   exit 1
