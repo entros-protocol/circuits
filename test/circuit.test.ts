@@ -12,7 +12,7 @@ import {
 describe("Entros Hamming Distance Circuit", function () {
   this.timeout(120000); // ZK proof generation can take time
 
-  let vk: any;
+  let vk: unknown;
 
   before(async () => {
     // Derive the verification key from the SAME proving key the proofs use, so

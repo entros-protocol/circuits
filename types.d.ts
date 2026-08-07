@@ -1,4 +1,8 @@
 declare module "snarkjs" {
+  export const zKey: {
+    exportVerificationKey(zkeyPath: string): Promise<unknown>;
+  };
+
   export const groth16: {
     fullProve(
       input: any,
@@ -11,8 +15,4 @@ declare module "snarkjs" {
       proof: any
     ): Promise<boolean>;
   };
-}
-
-declare module "circomlibjs" {
-  export function buildPoseidon(): Promise<any>;
 }

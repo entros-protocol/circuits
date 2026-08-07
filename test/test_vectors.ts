@@ -1,5 +1,6 @@
 import * as snarkjs from "snarkjs";
 import { createHash } from "crypto";
+import { poseidon3 } from "poseidon-lite/poseidon3";
 
 const WASM_PATH = "build/entros_hamming_js/entros_hamming.wasm";
 const ZKEY_PATH = "build/entros_hamming_final.zkey";
@@ -24,18 +25,6 @@ export const F_p = BigInt(
   "21888242871839275222246405745257275088548364400416034343698204186575808495617"
 );
 
-// Poseidon hash using circomlibjs (matches circomlib's Poseidon(3) in-circuit)
-let poseidonFn: any = null;
-
-async function getPoseidon() {
-  if (!poseidonFn) {
-    const circomlibjs = await import("circomlibjs");
-    const poseidon = await circomlibjs.buildPoseidon();
-    poseidonFn = poseidon;
-  }
-  return poseidonFn;
-}
-
 // Pack 256 bits into two 128-bit field elements (matching circuit's Bits2Num)
 function packBitsToFieldElements(bits: number[]): [bigint, bigint] {
   let lo = BigInt(0);
@@ -58,10 +47,8 @@ async function computeCommitment(
   bits: number[],
   salt: bigint
 ): Promise<bigint> {
-  const poseidon = await getPoseidon();
   const [lo, hi] = packBitsToFieldElements(bits);
-  const hash = poseidon([lo, hi, salt]);
-  return poseidon.F.toObject(hash);
+  return poseidon3([lo, hi, salt]);
 }
 
 // Deterministic 256-bit fingerprint from a seed label

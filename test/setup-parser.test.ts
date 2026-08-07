@@ -1,11 +1,9 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 
 import { expect } from "chai";
 
-const testRoot = dirname(fileURLToPath(import.meta.url));
-const parser = resolve(testRoot, "../scripts/parse_constraint_count.sh");
+const parser = resolve(process.cwd(), "scripts/parse_constraint_count.sh");
 
 describe("setup constraint parser", () => {
   it("ignores ANSI colour parameters", () => {
