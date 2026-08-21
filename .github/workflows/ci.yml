@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Verify JavaScript toolchain
+        run: |
+          test "$(node --version)" = "v$(cat .nvmrc)"
+          test "$(npm --version)" = "$(node -p 'require("./package.json").packageManager.split("@").at(-1)')"
+
+      - name: Install Circom
+        run: |
+          CIRCOM_URL=$(node -p 'require("./circuit-lock.json").circom.linuxAmd64Url')
+          CIRCOM_SHA256=$(node -p 'require("./circuit-lock.json").circom.linuxAmd64Sha256')
+          curl --fail --location --proto '=https' --tlsv1.2 \
+            --output "$RUNNER_TEMP/circom" "$CIRCOM_URL"
+          echo "$CIRCOM_SHA256  $RUNNER_TEMP/circom" | sha256sum --check
+          chmod 0755 "$RUNNER_TEMP/circom"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Verify Circom version
+        run: test "$(circom --version | awk '{print $NF}')" = "$(node -p 'require("./circuit-lock.json").circom.version')"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check sources
+        run: npm run typecheck
+
+      - name: Record committed key hashes
+        run: sha256sum keys/verification_key.json keys/verifying_key.rs > "$RUNNER_TEMP/key-hashes.before"
+
+      - name: Build local test artifacts
+        run: npm run setup
+
+      - name: Confirm committed keys are unchanged
+        run: |
+          sha256sum --check "$RUNNER_TEMP/key-hashes.before"
+          git diff --exit-code -- keys/
+
+      - name: Verify deterministic artifacts
+        run: npm run verify-artifacts
+
+      - name: Run circuit tests
+        run: npm test
