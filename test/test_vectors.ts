@@ -1,4 +1,5 @@
 import * as snarkjs from "snarkjs";
+import type { Groth16Proof } from "snarkjs";
 import { createHash } from "crypto";
 import { poseidon3 } from "poseidon-lite/poseidon3";
 
@@ -145,7 +146,7 @@ export async function generateProof(input: TestInput) {
 }
 
 // Serialize proof for on-chain submission (groth16-solana format)
-export function serializeProofForSolana(proof: any): {
+export function serializeProofForSolana(proof: Groth16Proof): {
   proofA: Uint8Array;
   proofB: Uint8Array;
   proofC: Uint8Array;

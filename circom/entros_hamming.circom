@@ -29,14 +29,8 @@ template IAMHamming(n_bits) {
     signal input threshold;
     signal input min_distance;
 
-    // H1: range-bound the public comparator inputs. circomlib's LessThan(9) /
-    // GreaterEqThan(9) below do NOT constrain their own operands, so a prover
-    // could set threshold or min_distance to a field value ≈ p that wraps past
-    // the 9-bit comparison and defeats the drift bound — undetected by any
-    // verifier that doesn't separately range-check (mobile / mopro / raw
-    // snarkjs; the on-chain verifier already does). Num2Bits(9) forces both
-    // into 0..511 — the comparators' valid domain, covering the 0..256 Hamming
-    // range with margin — so an out-of-range value fails witness generation.
+    // The comparators consume nine low bits, so constrain both public inputs to that domain.
+    // The 0..511 domain covers every possible 256-bit Hamming distance.
     component threshold_bits = Num2Bits(9);
     threshold_bits.in <== threshold;
     component min_distance_bits = Num2Bits(9);

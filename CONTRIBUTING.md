@@ -22,39 +22,21 @@ choose.
 
 ## Before you open a pull request
 
-Run the checks for the language you touched.
-
-**Rust**
+Install Node.js 24.15.0, npm 11.12.1, and Circom 2.2.3. Then run:
 
 ```bash
-cargo fmt --check
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test
-```
-
-**TypeScript**
-
-```bash
-npx eslint .
-npx tsc --noEmit
+npm ci
+npm run setup
+npm run typecheck
+npm run verify-artifacts
 npm test
-```
-
-**Anchor programs**
-
-```bash
-anchor build
-anchor test
 ```
 
 A pull request that fails any of these will not be merged.
 
 ## Standards we hold
 
-- No `unwrap()` in production Rust paths. Handle the error.
 - No `any` and no `@ts-ignore` in TypeScript. Strict mode stays on.
-- Every Anchor instruction validates every account it receives.
-- Program state lives in Program Derived Addresses, never raw keypair accounts.
 - Never commit a keypair, a `.env` file, a build artifact or `node_modules/`.
 
 ## Privacy rules that bind every change

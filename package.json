@@ -2,9 +2,16 @@
   "name": "entros-circuits",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=24.15.0 <25",
+    "npm": "11.12.1"
+  },
   "scripts": {
     "setup": "./scripts/setup.sh",
-    "test": "tsx ./node_modules/mocha/bin/mocha.js --exit -t 120000 \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "verify-artifacts": "node scripts/verify_artifacts.mjs",
+    "test": "node --import tsx ./node_modules/mocha/bin/mocha.js --exit -t 120000 \"test/**/*.test.ts\"",
     "prove": "./scripts/prove.sh",
     "verify": "./scripts/verify.sh",
     "export-vk": "node scripts/parse_vk_to_rust.js keys/verification_key.json keys/"
@@ -26,7 +33,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^25.5.0",
+    "@types/node": "^24.13.3",
     "chai": "^4.5.0",
     "mocha": "^11.7.5",
     "tsx": "^4.22.4",

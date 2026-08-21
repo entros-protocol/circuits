@@ -15,11 +15,8 @@ describe("Entros Hamming Distance Circuit", function () {
   let vk: unknown;
 
   before(async () => {
-    // Derive the verification key from the SAME proving key the proofs use, so
-    // the suite tests circuit logic (prove + verify with a matched pair) rather
-    // than whether the committed keys/ happen to match the current circuit —
-    // which they intentionally won't between a circuit change (e.g. H1) and the
-    // key-regeneration rollout.
+    // Derive the verification key from the local proving key so the suite uses a matched pair.
+    // The artifact parity gate checks the committed verification key separately.
     vk = await snarkjs.zKey.exportVerificationKey(ZKEY_PATH);
   });
 
@@ -34,32 +31,30 @@ describe("Entros Hamming Distance Circuit", function () {
     const input = await generateInvalidInput(200, 30, 3);
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed");
   });
 
   it("rejects proof with distance below minimum (perfect replay)", async () => {
-    // Distance 1 is below min_distance 3 — should fail
     const input = await generateValidInput(1, 30, 3);
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed — distance below minimum");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed because distance is below the minimum");
   });
 
   it("rejects proof with zero distance (exact replay)", async () => {
-    // Distance 0 — identical fingerprints — should fail
     const input = await generateValidInput(0, 30, 3);
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed — zero distance");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed because distance is zero");
   });
 
   it("accepts proof at exact min_distance boundary", async () => {
@@ -75,10 +70,10 @@ describe("Entros Hamming Distance Circuit", function () {
     input.commitment_new = "12345";
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed");
   });
 
   it("rejects proof with wrong salt", async () => {
@@ -86,20 +81,20 @@ describe("Entros Hamming Distance Circuit", function () {
     input.salt_new = "99999";
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed");
   });
 
   it("rejects proof at exact threshold boundary", async () => {
     const input = await generateValidInput(30, 30, 3);
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed");
   });
 
   it("accepts proof one below threshold", async () => {
@@ -121,10 +116,14 @@ describe("Entros Hamming Distance Circuit", function () {
     const input = await generateValidInput(5, 5, 10, "impossible");
     try {
       await generateProof(input);
-      expect.fail("Should have thrown — impossible constraint range");
-    } catch (err: any) {
-      expect(err.message).to.include("Assert Failed");
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) {
+        throw error;
+      }
+      expect(error.message).to.include("Assert Failed");
+      return;
     }
+    expect.fail("Proof generation should have failed for an impossible constraint range");
   });
 
   it("accepts minimum viable distance with tight threshold", async () => {
@@ -135,44 +134,38 @@ describe("Entros Hamming Distance Circuit", function () {
     expect(valid).to.be.true;
   });
 
-  // H1: the public comparator inputs are now range-bound by Num2Bits(9).
-  // Pre-fix, threshold or min_distance set to a field value ≈ p aliased past
-  // the 9-bit LessThan/GreaterEqThan and defeated the drift bound for any
-  // verifier that didn't separately range-check. These now fail witness
-  // generation at the Num2Bits constraint.
-  it("rejects threshold set to a wrapping field value (H1)", async () => {
+  // Num2Bits constrains both public comparator inputs to the nine-bit domain.
+  it("rejects threshold set to a wrapping field value", async () => {
     const input = await generateValidInput(10, 30, 3, "h1-threshold");
     input.threshold = (F_p - 1n).toString();
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed — threshold exceeds the 9-bit bound");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed because threshold exceeds the nine-bit bound");
   });
 
-  it("rejects min_distance set to a wrapping field value (H1)", async () => {
+  it("rejects min_distance set to a wrapping field value", async () => {
     const input = await generateValidInput(10, 30, 3, "h1-mindist");
     input.min_distance = (F_p - 1n).toString();
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed — min_distance exceeds the 9-bit bound");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed because min_distance exceeds the nine-bit bound");
   });
 
-  it("rejects threshold just above the 9-bit bound — 512 (H1)", async () => {
-    // 512 is the first value that doesn't fit in 9 bits (0..511). Confirms the
-    // bound is exactly 9-bit, not merely "rejects huge field values".
+  it("rejects threshold 512 above the nine-bit bound", async () => {
     const input = await generateValidInput(10, 30, 3, "h1-512");
     input.threshold = "512";
     try {
       await generateProof(input);
-      expect.fail("Proof generation should have failed — 512 exceeds the 9-bit bound");
-    } catch (err: any) {
-      expect(err).to.exist;
+    } catch {
+      return;
     }
+    expect.fail("Proof generation should have failed because 512 exceeds the nine-bit bound");
   });
 
   it("serializes proof in groth16-solana format", async () => {

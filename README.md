@@ -12,7 +12,7 @@ The next circuit release must regenerate and verify every proving and verifying 
 
 ## Circuit
 
-**`entros_hamming.circom`** — Main Groth16 circuit (BN254). ~2,010 constraints.
+**`entros_hamming.circom`** is the main Groth16 circuit on BN254. It has 2,030 constraints.
 
 Proves three things:
 1. `Poseidon(pack(ft_new), salt_new) == commitment_new`
@@ -24,38 +24,44 @@ Private witnesses: `ft_new[256]`, `ft_prev[256]`, `salt_new`, `salt_prev`
 
 ## Trusted Setup
 
-Groth16 requires a structured reference string (SRS) produced by a trusted setup ceremony. The current setup uses:
+Groth16 requires a structured reference string produced by a trusted setup ceremony. The current setup uses:
 
-- **Phase 1 (Powers of Tau):** Hermez community ceremony (`powersOfTau28_hez_final_12.ptau`) — multi-contributor, production-grade. This phase is circuit-agnostic and reusable.
+- **Phase 1 (Powers of Tau):** Hermez community ceremony (`powersOfTau28_hez_final_12.ptau`). This phase is reusable across circuits.
 - **Phase 2 (Circuit-specific):** Single contributor with entropy from `openssl rand` + timestamp. This is the phase that requires multiple independent contributors for production security.
 
 **Current status: development setup.** The Phase 2 ceremony has a single contributor. The toxic waste (secret randomness used to derive the proving/verification keys) is known to whoever ran `scripts/setup.sh`. If retained, it could be used to forge proofs that pass on-chain verification.
 
 **What this means in practice:**
-- On devnet, this is standard and acceptable. All Groth16 projects use single-contributor setups during development.
-- For mainnet, a multi-party computation (MPC) ceremony is required where multiple independent contributors each add entropy. The toxic waste is only compromised if ALL contributors collude. The ceremony will follow the Hermez/snarkjs Phase 2 protocol with public verification of each contribution.
+- The devnet setup supports protocol testing. It does not meet the mainnet ceremony requirement.
+- Mainnet requires a multi-party computation ceremony with independent contributors. One honest contributor protects the setup. The Hermez/snarkjs protocol verifies each contribution.
 
-**Mainnet ceremony:** the full operator runbook — contributor protocol, transcript/attestation
-format, and the post-ceremony redeploy checklist — is in [`CEREMONY.md`](./CEREMONY.md). Run it
-via `scripts/setup.sh --ceremony` (the only mode that writes `keys/`); the default
+**Mainnet ceremony:** [`CEREMONY.md`](./CEREMONY.md) defines the contributor protocol, transcript format, and deployment checklist. Run it
+via `scripts/setup.sh --ceremony`. Only this mode writes `keys/`. The default
 `scripts/setup.sh` is a local test build that never touches `keys/`.
 
 ## Setup
 
 ```bash
-# Prerequisites: circom (cargo install --git https://github.com/iden3/circom.git), Node.js >= 20
+# Prerequisites: Node.js 24.15.0, npm 11.12.1, Circom 2.2.3
 
-npm install
-./scripts/setup.sh            # Test build: compile + local proving key in build/ (keys/ untouched)
-./scripts/setup.sh --ceremony # Multi-party Phase-2 ceremony: writes keys/ (see CEREMONY.md)
-npm test                      # Run circuit tests
+npm ci
+npm run setup                 # Test build: compile + local proving key in build/ (keys/ untouched)
+./scripts/setup.sh --ceremony # Single-machine ceremony mechanics: writes keys/ (see CEREMONY.md)
+npm run typecheck
+npm run verify-artifacts
+npm test
 ```
+
+`circuit-lock.json` pins the compiler, Powers of Tau digest, constraint count, compiled artifacts, and key serialization.
 
 ## Proof Generation
 
 ```bash
-# Generate a test proof (requires setup.sh to have been run)
-npx snarkjs groth16 fullprove <input.json> build/entros_hamming_js/entros_hamming.wasm build/entros_hamming_final.zkey proof.json public.json
+# Generate a proof with the local test key.
+npm run prove -- <input.json> [proof.json] [public.json]
+
+# Verify the proof with the matching local test key.
+npm run verify -- [proof.json] [public.json]
 ```
 
 ## Verification Key

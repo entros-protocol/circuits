@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "circom": {
+    "version": "2.2.3",
+    "linuxAmd64Url": "https://github.com/iden3/circom/releases/download/v2.2.3/circom-linux-amd64",
+    "linuxAmd64Sha256": "85342c7ff332d948df7c0c50ecf201e6129349aef550ce873f3c811b79fe53a3"
+  },
+  "powersOfTau": {
+    "url": "https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_12.ptau",
+    "blake2b512": "ded2694169b7b08e898f736d5de95af87c3f1a64594013351b1a796dbee393bd825f88f9468c84505ddd11eb0b1465ac9b43b9064aa8ec97f2b73e04758b8a4a"
+  },
+  "artifacts": {
+    "constraintCount": 2030,
+    "r1csSha256": "44f3f2d194a89cd178eff0d39eba65942f5ff72b0d14913a99e79127efb3b9d2",
+    "wasmSha256": "87abcf0e4c409f350dc2f66738d9fdc7ec5e3fb3d247bfd7e56a2248d3a5e8a7",
+    "verificationKeyJsonSha256": "93edb94e328adb96f87220dde5ad652a16ca85b02fe564c715b275c09dcd3e28",
+    "verificationKeyRustSha256": "50fc4e87d421354092954771d1a2de9f2d01362d03564d07f1125e366e6f885e"
+  }
+}
