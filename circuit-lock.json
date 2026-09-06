@@ -6,7 +6,7 @@
     "linuxAmd64Sha256": "85342c7ff332d948df7c0c50ecf201e6129349aef550ce873f3c811b79fe53a3"
   },
   "powersOfTau": {
-    "url": "https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_12.ptau",
+    "url": "https://raw.githubusercontent.com/advaita-saha/zk-Voting/fd272dbfdd98e055547b66343503abdbf0c000cc/powersOfTau28_hez_final_12.ptau",
     "blake2b512": "ded2694169b7b08e898f736d5de95af87c3f1a64594013351b1a796dbee393bd825f88f9468c84505ddd11eb0b1465ac9b43b9064aa8ec97f2b73e04758b8a4a"
   },
   "artifacts": {
