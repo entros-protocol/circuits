@@ -1,5 +1,54 @@
 # Phase-2 Trusted-Setup Ceremony Runbook
 
+## Request-bound circuit candidate
+
+The next circuit is `circom/entros_request_bound_v1.circom`.
+`request-bound-circuit.json` records its source hashes, compiler, optimization, and deterministic artifacts.
+The candidate uses Circom 2.2.3 with O1 and has 2,290 constraints.
+
+R1CS SHA-256:
+
+```text
+36065322931fdcf3fb9ed4ff0e0977bf93795fb51634b805a4ad95a23e494b1a
+```
+
+WASM SHA-256:
+
+```text
+ac3dc8953f55b2580f291683ac8d36a6d1e5606c83687be454edff2380e892fb
+```
+
+The six public inputs, in order, are:
+
+1. `commitment_new`
+2. `commitment_prev`
+3. `threshold`
+4. `min_distance`
+5. `request_digest_hi`
+6. `request_digest_lo`
+
+The exported verification key must have seven IC entries.
+The last two entries must be nondegenerate and match the accepted request-binding tests.
+Compile with explicit O1. O2 produces a different R1CS and requires different keys.
+
+The candidate still requires devnet mint and update acceptance before ceremony approval.
+The existing isolated test contribution cannot serve as the release contribution.
+Generate any approved devnet test contribution in a new directory and identify it as unsuitable for mainnet.
+Preserve existing keys and packaged artifacts until the owner approves their replacement.
+
+Both active programs require the `request-bound-v1` feature and the same explicit deployment domain.
+The verifier also requires the matching six-input verification key.
+Review browser manifests, native build inputs, and program binaries as one artifact generation.
+The default setup and upgrade scripts still select the legacy generation.
+
+Do not execute the legacy procedure below for this candidate.
+Prepare a separate ceremony transcript and fresh output paths after candidate acceptance and owner approval.
+
+## Legacy four-input procedure
+
+The remaining sections document the previous `entros_hamming.circom` generation.
+Its four-input checks do not apply to the request-bound candidate.
+
 The Groth16 proving system for `entros_hamming.circom` needs a per-circuit Phase-2
 trusted setup. Until a multi-party ceremony runs, the setup has a **single contributor**
 (see `README.md`). Whoever generated it knows the toxic waste and could forge proofs

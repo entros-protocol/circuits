@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "generation": "request-bound-v1",
+  "status": "candidate-awaiting-devnet-acceptance",
+  "compiler": "circom 2.2.3",
+  "optimization": "O1",
+  "constraintCount": 2290,
+  "publicInputOrder": [
+    "commitment_new",
+    "commitment_prev",
+    "threshold",
+    "min_distance",
+    "request_digest_hi",
+    "request_digest_lo"
+  ],
+  "verificationKeyIcCount": 7,
+  "r1csSha256": "36065322931fdcf3fb9ed4ff0e0977bf93795fb51634b805a4ad95a23e494b1a",
+  "wasmSha256": "ac3dc8953f55b2580f291683ac8d36a6d1e5606c83687be454edff2380e892fb",
+  "sources": {
+    "circom/entros_request_bound_v1.circom": "284bf3656364fef619812a884368bc88f1eb153dce79e20f84b4f215e81e6e0d",
+    "circom/hamming_relation.circom": "a4c9bd83cecb7640b3b403634f2fb5ff9d2219a995d7b05e493911480290fee5",
+    "circom/hamming_distance.circom": "347bbe2a405f4fce80dcc72191013b6690164cbcdccbec34ad20f62c266701e0",
+    "circom/commitment_check.circom": "e08c955c9bf4411bfd8c274a171f8cc7b908f06b7cd3aef2b24880e006ad5fa1",
+    "package-lock.json": "dd636745e3ca18ecbcda1f9faf8b89adae02cf0d307a94b28003f08fd1fbd5a6"
+  },
+  "setupGenerated": false,
+  "ceremonyAccepted": false
+}
