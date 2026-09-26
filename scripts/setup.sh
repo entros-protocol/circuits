@@ -35,7 +35,7 @@ elif [ -n "${1:-}" ]; then
   exit 1
 fi
 
-echo "=== IAM Circuit Setup (mode: $MODE) ==="
+echo "=== Entros Circuit Setup (mode: $MODE) ==="
 
 if ! command -v circom &>/dev/null; then
   echo "Error: Circom is not installed." >&2
@@ -138,7 +138,7 @@ TRANSCRIPT="build/ceremony_transcript.txt"
 
 echo "Phase-2 ceremony: $CONTRIBUTORS contributor(s)"
 {
-  echo "IAM Hamming circuit: Phase 2 ceremony transcript"
+  echo "Entros Hamming circuit: Phase 2 ceremony transcript"
   echo "circuit:           circom/entros_hamming.circom"
   echo "r1cs constraints:  $CONSTRAINT_COUNT"
   echo "contributors:      $CONTRIBUTORS"
