@@ -22,7 +22,7 @@ choose.
 
 ## Before you open a pull request
 
-Install Node.js 24.15.0, npm 11.12.1, and Circom 2.2.3. Then run:
+Install Node.js 24.22.1, npm 11.19.1, and Circom 2.2.3. Then run:
 
 ```bash
 npm ci

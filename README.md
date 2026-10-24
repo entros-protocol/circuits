@@ -42,7 +42,7 @@ via `scripts/setup.sh --ceremony`. Only this mode writes `keys/`. The default
 ## Setup
 
 ```bash
-# Prerequisites: Node.js 24.15.0, npm 11.12.1, Circom 2.2.3
+# Prerequisites: Node.js 24.22.1, npm 11.19.1, Circom 2.2.3
 
 npm ci
 npm run setup                 # Test build: compile + local proving key in build/ (keys/ untouched)
