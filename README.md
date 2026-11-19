@@ -74,7 +74,7 @@ Do not copy this Rust key into `protocol-core` alone. Web, mobile, mopro, and th
 
 ## License
 
-`LICENSE` applies the MIT License to Entros-authored files in this repository, including the `.circom` sources, scripts, tests, and exported keys.
+`LICENSE` applies the MIT License to Entros-authored `.circom` source files, scripts, and tests in this repository.
 
 ### Third-party dependencies
 
