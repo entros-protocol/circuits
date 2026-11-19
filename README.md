@@ -74,4 +74,15 @@ Do not copy this Rust key into `protocol-core` alone. Web, mobile, mopro, and th
 
 ## License
 
-MIT
+`LICENSE` applies the MIT License to Entros-authored `.circom` source files, scripts, and tests in this repository.
+
+### Third-party dependencies
+
+Compiled artifacts and build tooling depend on third-party packages under their own licenses:
+
+| Component | Manifest / lock version | License | Role |
+|---|---|---|---|
+| `circomlib` | `^2.0.5` (`2.0.5` locked) | `GPL-3.0` | Template includes (`poseidon.circom`, `bitify.circom`, `comparators.circom`) in `circom/commitment_check.circom` and `circom/hamming_relation.circom`, compiled into `.r1cs` and `.wasm` artifacts |
+| `snarkjs` | `^0.7.6` (`0.7.6` locked) | `GPL-3.0` | Proving, verification, and R1CS inspection tooling in `scripts/` and `test/` |
+| `circom` compiler | `2.2.3` (`circuit-lock.json`) | `GPL-3.0` | Circuit compiler producing `.r1cs`, `.wasm`, and `.sym` build outputs |
+| `poseidon-lite` | `^0.3.0` (`0.3.0` locked) | `MIT` | Off-circuit Poseidon hash helper used in `test/test_vectors.ts` |
