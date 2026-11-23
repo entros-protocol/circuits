@@ -1,5 +1,7 @@
 # circuits
 
+> **Status:** This repository holds a Groth16 research artifact in maintenance mode. Entros paused the Phase 2 trusted-setup ceremony pending Solana mainnet demand. Build tooling and compiled artifacts depend on `GPL-3.0` packages (`circomlib`, `snarkjs`, and `circom`) under [License](#license).
+
 ZK circuit definitions for the Entros Protocol. The circuit proves two Poseidon openings and a bounded Hamming distance without revealing either fingerprint.
 
 ## Release compatibility
